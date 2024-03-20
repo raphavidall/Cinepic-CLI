@@ -9,32 +9,41 @@ import Foundation
 import ArgumentParser
 import GoogleGenerativeAI
 
-let model = GenerativeModel(name: "MODEL_NAME", apiKey: "")
-
 @main
-struct Cinepic_CLI: ParsableCommand {
+struct Cinepic_CLI: AsyncParsableCommand {
     
     static var configuration = CommandConfiguration(
-            commandName: "cinepic",
-            abstract: "Cinepic: A Title For Your Academy Saga",
-            version: "1.0.0"
+        
+        commandName: "cinepic",
+        abstract: "Cinepic: A Title For Your Academy Saga",
+        discussion: """
+            This tool generates a movie title for your journey through the Apple Developer Academy based on the arguments you provide.
+            By entering the first letter of your name, the day and month of your birth (for example, R 21 04), Cinepic generates a fun and perhaps prophetic title about your student journey.
+            You can also create a title for your group of friends or changed a theme.
+            """,
+        version: "1.0.0"
     )
     
-    @Argument(help: "The phrases to repeat")
+    @Argument(help: "First letter of your name...")
     var initialSelected: String
     
-    @Argument(help: "Your birthday day...")
+    @Argument(help: "Your birth day...")
     var daySelected: Int
     
-    @Argument(help: "Your birthday month...")
+    @Argument(help: "Your birth month...")
     var monthSelected: Int
     
     @Option(name: .shortAndLong, help: "Escolha o tema do seu filme [academy, political, criminal, athletic or artistic]")
     var theme: String?
-    //TO DO: criar comando verboso e nao verboso para theme (-t = --theme)
     
-    mutating func run() throws {
-        try createTitle(initialSelected: initialSelected, daySelected: daySelected, monthSelected: monthSelected, theme: theme) //parsear valores string como int
+    mutating func run() async throws {
+        do {
+            let result = try createTitle(initialSelected: initialSelected, daySelected: daySelected, monthSelected: monthSelected, theme: theme) //parsear valores string como int
+            await createSinopse(result: result)//        await createSinopse(result: result)
+
+        } catch {
+            print("deu ruim o")
+        }
     }
     
     func pausaDramatica(_ phrase: String, segundos: Int) {
@@ -42,7 +51,7 @@ struct Cinepic_CLI: ParsableCommand {
         sleep(UInt32(segundos))
     } //fechamento do Cinepic_CLI
     
-    func createTitle(initialSelected: String, daySelected: Int, monthSelected: Int, theme: String?) throws {
+    func createTitle(initialSelected: String, daySelected: Int, monthSelected: Int, theme: String?) throws -> String {
                 
         // url do arquivo
         let databaseURL = Bundle.module.url(forResource: "database", withExtension: "json")!
@@ -56,31 +65,36 @@ struct Cinepic_CLI: ParsableCommand {
         pausaDramatica("...Iniciando a criação do seu Título Épico com o tema \(theme!.uppercased())", segundos: 2)
         
         guard let theme = database.themes[theme!] else { // po database[themeSelected]
-            return(print("Error: O tema informado é inválido. Use cinepic --help para obter ajuda."))
+            let error = "Error: O tema informado é inválido. Use cinepic --help para obter ajuda."
+            print(error)
+            return error
             //guard evita redundancia de condicoes
         }
         pausaDramatica("...Consultando os maiores nomes do cinema intergalático...", segundos: 2)
         
         guard let opening = theme.initialLetters.first(where: { $0.key == initialSelected })?.value else {
-            print("Error: Parametro InitialLetter Incorreto.")
-            return
+            let error = "Error: Parametro InitialLetter Incorreto."
+            print(error)
+            return error
         }
         
         pausaDramatica("...Aplicando a numerologia... por que não?", segundos: 2)
         
         guard let characteristic = theme.daysOfBirth.first(where: { $0.key == daySelected })?.value else {
-            print("Error: Parametro daysOfBirth Incorreto.")
-            return
+            let error = "Error: Parametro daysOfBirth Incorreto."
+            print(error)
+            return error
         }
         
         pausaDramatica("...Consultando os astros para adicionar um pouco de realidade aqui.", segundos: 2)
         
-        guard let person = theme.birthMonths.first(where: { $0.key == monthSelected})?.value else {
-            print("Error: Parametro birthMonths Incorreto.")
-            return
+        guard let person = theme.birthMonths.first(where: { $0.key == monthSelected })?.value else {
+            let error = "Error: Parametro birthMonths Incorreto."
+            print(error)
+            return error
         }
 
-        pausaDramatica("Bom, isso pode ser um pouco assustador ou familiar demais. Você quer mesmo ver isso? Digite sim ou não", segundos: 2)
+        pausaDramatica("Bom, isso pode ser um pouco assustador ou familiar demais. Você quer mesmo ver isso? Digite sim ou não.", segundos: 2)
         
         let response: String? = readLine()?.lowercased()
     
@@ -90,10 +104,26 @@ struct Cinepic_CLI: ParsableCommand {
         } else {
             pausaDramatica("Desculpe, já fomos longe demais para desistir.", segundos: 2)
         }
-        
+
         let title = "\(opening) \(person) \(characteristic)"
         
-        print("Your Epic Title Movie is: \(title)!!!")
-        
+        print(title)
+        return title
     }
+    
+    func createSinopse(result: String) async {
+        let model = GenerativeModel(name: "gemini-pro", apiKey: "AIzaSyCJhYIivfOA1K6YCKDwRpyFAcY8asP9aro")
+        let prompt = "Escreva uma pequena sinopse de para o filme \(result) cujo gênero principal é . Não nomeie os personagens."
+        
+        do {
+            let responsePrompt = try await model.generateContent(prompt)
+            if let text = responsePrompt.text {
+                print(text)
+            }
+        } catch {
+            let error = "Erro"
+            print(error)
+        }
+    }
+    
 }
