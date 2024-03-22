@@ -14,7 +14,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
     
     static var configuration = CommandConfiguration(
         
-        commandName: "cinepic",
+        commandName: image,
         abstract: "Cinepic: A Title For Your Saga",
         discussion: """
             This tool generates a movie title for your journey based on the arguments you provide.
@@ -52,7 +52,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
     }
     
     func createTitle(initialSelected: String, daySelected: Int, monthSelected: Int, theme: String?) throws -> String {
-        
+        print(image)
         // url do arquivo de dados
         let databaseURL = Bundle.module.url(forResource: "database", withExtension: "json")!
         
@@ -62,7 +62,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
         // convertendo de json para 'Database'
         let database = try JSONDecoder().decode(Database.self, from: data)
         
-        pausaDramatica("...Iniciando a criação do seu Título Épico com o tema \(theme!.uppercased())", segundos: 2)
+        pausaDramatica("Iniciando a criação do seu Título Épico com o tema \(theme!.uppercased())", segundos: 2)
         
         //verificar se o tema existe no database e guardar em "theme"
         guard let theme = database.themes[theme!] else { // po database[themeSelected]
@@ -72,7 +72,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
             //guard evita redundancia de condicoes
         }
         
-        pausaDramatica("...Consultando os maiores nomes do cinema intergalático...", segundos: 2)
+        pausaDramatica("Consultando os maiores nomes do cinema intergalático... \n", segundos: 2)
         
         //selecionar o valor relacionado à letra informada como input e guardar em "opening"
         guard let opening = theme.initialLetters.first(where: { $0.key == initialSelected })?.value else {
@@ -81,7 +81,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
             return error
         }
         
-        pausaDramatica("...Aplicando um pouco de numerologia... por que não?", segundos: 2)
+        pausaDramatica("Aplicando um pouco de numerologia... por que não? \n", segundos: 2)
         
         //selecionar o valor relacionado ao dia informada como input e guardar em "characteristic"
         guard let characteristic = theme.daysOfBirth.first(where: { $0.key == daySelected })?.value else {
@@ -90,7 +90,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
             return error
         }
         
-        pausaDramatica("...Consultando os astros para adicionar um pouco de realidade aqui.", segundos: 2)
+        pausaDramatica("Consultando os astros para adicionar um pouco de realidade aqui. \n", segundos: 2)
         
         //selecionar o valor relacionado ao mês informado como input e guardar em "person"
         guard let person = theme.birthMonths.first(where: { $0.key == monthSelected })?.value else {
@@ -99,7 +99,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
             return error
         }
 
-        pausaDramatica("Bom, isso pode ser um pouco assustador ou familiar demais. Você quer mesmo ver isso? Digite sim ou não.", segundos: 2)
+        pausaDramatica("😧 Bom, isso pode ser um pouco assustador ou familiar demais. Você quer mesmo ver isso? Digite 'sim' ou 'nao'.", segundos: 2)
         
         let response: String? = readLine()?.lowercased()
     
@@ -112,23 +112,28 @@ struct Cinepic_CLI: AsyncParsableCommand {
 
         let title = "\(opening) \(person) \(characteristic)"
         
-        print("O título do seu filme é: ", title)
+        print("-> O título do seu filme é: ", title, "<- \n")
+        
+        pausaDramatica("Gerando a sinopse do seu filme 🎬", segundos: 2)
+        
         return title
     }
     
     func createSinopse(result: String) async {
         let model = GenerativeModel(name: "gemini-pro", apiKey: "AIzaSyCJhYIivfOA1K6YCKDwRpyFAcY8asP9aro")
-        let prompt = "Escreva uma pequena sinopse de para o filme \(result). Não nomeie os personagens."
+        let prompt = "Escreva uma pequena sinopse bem humorada para o filme \(result) com o final feliz. Não nomeie os personagens e utilize dupla marcação de genero para o personagem."
         
         do {
             let responsePrompt = try await model.generateContent(prompt)
             if let text = responsePrompt.text {
-                print(text)
+                print(text, "\n")
             }
         } catch {
             let error = "Erro"
             print(error)
         }
+        
+        print("Obrigada por usar o CinEpic! 😄")
     }
     
 }
