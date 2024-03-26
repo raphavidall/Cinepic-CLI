@@ -14,11 +14,11 @@ struct Cinepic_CLI: AsyncParsableCommand {
     
     static var configuration = CommandConfiguration(
         
-        commandName: image,
+        commandName: "cinepic",
         abstract: "Cinepic: A Title For Your Saga",
         discussion: """
             This tool generates a movie title for your journey based on the arguments you provide.
-            By entering the first letter of your name, the day and month of your birth and a theme (for example, R 21 04 --theme academy), Cinepic generates a fun - and perhaps prophetic - title about your journey.
+            By entering the first letter of your name, the day and month of your birth and a theme (for example, cinepic R 21 04 --theme academy), Cinepic generates a fun - and perhaps prophetic - title about your journey.
             Cinepic also generates a small synopsis for your story using Google Generative AI, Gemini.
             """,
         version: "1.0.0"
@@ -34,12 +34,16 @@ struct Cinepic_CLI: AsyncParsableCommand {
     var monthSelected: Int
     
     @Option(name: .shortAndLong, help: "Choose a theme for your movie [academy, political, criminal, athletic or artistic]")
-    var theme: String?
+    var theme: String = "academy"
     
     mutating func run() async throws {
         do {
             let result = try createTitle(initialSelected: initialSelected, daySelected: daySelected, monthSelected: monthSelected, theme: theme) //parsear valores string como int
-            await createSinopse(result: result)//        await createSinopse(result: result)
+            if result.contains("Error") {
+                print("Erro na criação do título.")
+            } else {
+                await createSinopse(result: result)
+            }
 
         } catch {
             print("Erro")
@@ -52,6 +56,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
     }
     
     func createTitle(initialSelected: String, daySelected: Int, monthSelected: Int, theme: String?) throws -> String {
+        
         print(image)
         // url do arquivo de dados
         let databaseURL = Bundle.module.url(forResource: "database", withExtension: "json")!
@@ -65,7 +70,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
         pausaDramatica("Iniciando a criação do seu Título Épico com o tema \(theme!.uppercased())", segundos: 2)
         
         //verificar se o tema existe no database e guardar em "theme"
-        guard let theme = database.themes[theme!] else { // po database[themeSelected]
+        guard let theme = database.themes[theme!.lowercased()] else { // po database[themeSelected]
             let error = "Error: O tema informado é inválido. Use cinepic --help para obter ajuda."
             print(error)
             return error
@@ -75,8 +80,8 @@ struct Cinepic_CLI: AsyncParsableCommand {
         pausaDramatica("Consultando os maiores nomes do cinema intergalático... \n", segundos: 2)
         
         //selecionar o valor relacionado à letra informada como input e guardar em "opening"
-        guard let opening = theme.initialLetters.first(where: { $0.key == initialSelected })?.value else {
-            let error = "Error: Parametro InitialLetter Incorreto."
+        guard let opening = theme.initialLetters.first(where: { $0.key == initialSelected.uppercased() })?.value else {
+            let error = "Error: Parametro InitialLetter Incorreto. Use cinepic --help para obter ajuda."
             print(error)
             return error
         }
@@ -85,7 +90,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
         
         //selecionar o valor relacionado ao dia informada como input e guardar em "characteristic"
         guard let characteristic = theme.daysOfBirth.first(where: { $0.key == daySelected })?.value else {
-            let error = "Error: Parametro daysOfBirth Incorreto."
+            let error = "Error: Parametro DaysOfBirth Incorreto. Use cinepic --help para obter ajuda."
             print(error)
             return error
         }
@@ -94,7 +99,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
         
         //selecionar o valor relacionado ao mês informado como input e guardar em "person"
         guard let person = theme.birthMonths.first(where: { $0.key == monthSelected })?.value else {
-            let error = "Error: Parametro birthMonths Incorreto."
+            let error = "Error: Parametro BirthMonths Incorreto. Use cinepic --help para obter ajuda."
             print(error)
             return error
         }
@@ -120,6 +125,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
     }
     
     func createSinopse(result: String) async {
+        
         let model = GenerativeModel(name: "gemini-pro", apiKey: "AIzaSyCJhYIivfOA1K6YCKDwRpyFAcY8asP9aro")
         let prompt = "Escreva uma pequena sinopse bem humorada para o filme \(result) com o final feliz. Não nomeie os personagens e utilize dupla marcação de genero para o personagem."
         
