@@ -15,11 +15,13 @@ struct Cinepic_CLI: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
         
         commandName: "cinepic",
-        abstract: "Cinepic: A Title For Your Saga",
+        abstract: "Cinepic: A Title For Your Movie",
         discussion: """
-            This tool generates a movie title for your journey based on the arguments you provide.
-            By entering the first letter of your name, the day and month of your birth and a theme (for example, cinepic R 21 04 --theme academy), Cinepic generates a fun - and perhaps prophetic - title about your journey.
-            Cinepic also generates a small synopsis for your story using Google Generative AI, Gemini.
+            This CLI tool generates a movie title for you based on the arguments you provide, by entering the first letter of your name, the day and month of your birth and a theme.
+            
+            For example => cinepic R 21 04 --theme academy
+            
+            Cinepic also writes a small synopsis for your story using Google Generative AI, Gemini.
             """,
         version: "1.0.0"
     )
@@ -126,16 +128,17 @@ struct Cinepic_CLI: AsyncParsableCommand {
     
     func createSinopse(result: String) async {
         
-        let model = GenerativeModel(name: "gemini-pro", apiKey: "AIzaSyCJhYIivfOA1K6YCKDwRpyFAcY8asP9aro")
-        let prompt = "Escreva uma pequena sinopse bem humorada para o filme \(result) com o final feliz. Não nomeie os personagens e utilize dupla marcação de genero para o personagem."
-        
+        //CHANGE BELOW THIS LINE
+        let model = GenerativeModel(name: "gemini-pro", apiKey: "insert your own key")
+        let prompt = "Escreva uma pequena sinopse bem humorada para o filme \(result). Não nomeie os personagens e utilize dupla marcação de genero para o personagem."
+        //DO NOT CHANGE BELOW THIS LINE
         do {
             let responsePrompt = try await model.generateContent(prompt)
             if let text = responsePrompt.text {
                 print(text, "\n")
             }
         } catch {
-            let error = "Erro"
+            let error = "Erro. Parece que os detalhes do seu futuro permanecerão um mistério..."
             print(error)
         }
         
