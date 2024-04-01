@@ -52,17 +52,22 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "W 28 6 -t academy"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "P 04 09"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "OS_ACTIVITY_MODE"
             value = "disable"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "apiKey"
+            value = "AIzaSyBcJxQ--38FOD4bFxTnNK8dPsUvKEohbHY"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

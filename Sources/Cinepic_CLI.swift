@@ -12,6 +12,10 @@ import GoogleGenerativeAI
 @main
 struct Cinepic_CLI: AsyncParsableCommand {
     
+    public var apiKey: String? {
+        ProcessInfo.processInfo.environment["apiKey"]
+    }
+
     static var configuration = CommandConfiguration(
         
         commandName: "cinepic",
@@ -129,7 +133,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
     func createSinopse(result: String) async {
         
         //CHANGE BELOW THIS LINE
-        let model = GenerativeModel(name: "gemini-pro", apiKey: "insert your own key")
+        let model = GenerativeModel(name: "gemini-pro", apiKey: apiKey ?? "")
         let prompt = "Escreva uma pequena sinopse bem humorada para o filme \(result). Não nomeie os personagens e utilize dupla marcação de genero para o personagem."
         //DO NOT CHANGE BELOW THIS LINE
         do {
