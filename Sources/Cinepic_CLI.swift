@@ -110,14 +110,26 @@ struct Cinepic_CLI: AsyncParsableCommand {
             return error
         }
 
-        pausaDramatica("😧 Bom, isso pode ser um pouco assustador ou familiar demais. Você quer mesmo ver isso? Digite 'sim' ou 'nao'.", segundos: 2)
+        pausaDramatica("😧 Bom, isso pode ser um pouco assustador ou familiar demais. Você quer mesmo ver isso?", segundos: 2)
         
-        let response: String? = readLine()?.lowercased()
-    
+        func getUserResponse() -> String {
+            while true {
+                print("Por favor, digite 'sim' ou 'não':")
+                if let response = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+                    if response == "sim" || response == "não" || response == "nao" {
+                        return response
+                    } else {
+                        pausaDramatica("❌ Resposta inválida. \n👁️ Preste atenção aqui e no seu futuro, jovem.", segundos: 2)
+                    }
+                }
+            }
+        }
+
+        let response = getUserResponse()
+
         if response == "sim" {
             pausaDramatica("Aí vai...", segundos: 2)
-    
-        } else {
+        } else if response == "não" || response == "nao" {
             pausaDramatica("Desculpe, já fomos longe demais para desistir.", segundos: 2)
         }
 
@@ -142,7 +154,7 @@ struct Cinepic_CLI: AsyncParsableCommand {
                 print(text, "\n")
             }
         } catch {
-            let error = "Erro. Parece que os detalhes do seu futuro permanecerão um mistério..."
+            let error = "Erro na geração da sinopse. \n🖖🔮 Parece que os detalhes do seu futuro permanecerão um mistério..."
             print(error)
         }
         

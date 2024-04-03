@@ -51,7 +51,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "W 28 6 -t academy"
+            argument = "R 21 4 -t criminal"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
